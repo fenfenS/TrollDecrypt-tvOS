@@ -1,6 +1,14 @@
 #import "TDUtils.h"
 #import "TDDumpDecrypted.h"
 #import "LSApplicationProxy+AltList.h"
+#import <objc/runtime.h>
+
+@interface SFAirDropSharingViewControllerTV : UIViewController
+-(id)initWithSharingItems:(id)arg1;
+-(void)setCompletionHandler:(void (^)(NSError *error))arg1;
+@end
+
+
 
 UIWindow *alertWindow = NULL;
 UIWindow *kw = NULL;
@@ -71,21 +79,21 @@ NSArray *sysctl_ps(void) {
 }
 
 void decryptApp(NSDictionary *app) {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        alertWindow = [[UIWindow alloc] initWithFrame: [UIScreen mainScreen].bounds];
-        alertWindow.rootViewController = [UIViewController new];
-        alertWindow.windowLevel = UIWindowLevelAlert + 1;
-        [alertWindow makeKeyAndVisible];
+    // dispatch_async(dispatch_get_main_queue(), ^{
+    //     alertWindow = [[UIWindow alloc] initWithFrame: [UIScreen mainScreen].bounds];
+    //     alertWindow.rootViewController = [UIViewController new];
+    //     alertWindow.windowLevel = UIWindowLevelAlert + 1;
+    //     [alertWindow makeKeyAndVisible];
         
-        // Show a "Decrypting!" alert on the device and block the UI
+    //     // Show a "Decrypting!" alert on the device and block the UI
             
-        kw = alertWindow;
-        if([kw respondsToSelector:@selector(topmostPresentedViewController)])
-            root = [kw performSelector:@selector(topmostPresentedViewController)];
-        else
-            root = [kw rootViewController];
-        root.modalPresentationStyle = UIModalPresentationFullScreen;
-    });
+    //     kw = alertWindow;
+    //     if([kw respondsToSelector:@selector(topmostPresentedViewController)])
+    //         root = [kw performSelector:@selector(topmostPresentedViewController)];
+    //     else
+    //         root = [kw rootViewController];
+    //     root.modalPresentationStyle = UIModalPresentationFullScreen;
+    // });
 
     NSLog(@"[trolldecrypt] spawning thread to do decryption in background...");
 
@@ -200,23 +208,40 @@ void bfinject_rocknroll(pid_t pid, NSString *appName, NSString *version) {
             }];
             [doneController addAction:okAction];
 
-            if ([[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"filza://"]]) {
-                UIAlertAction *openAction = [UIAlertAction actionWithTitle:@"Show in Filza" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
-                    [kw removeFromSuperview];
-                    kw.hidden = YES;
+            UIAlertAction *openAction = [UIAlertAction actionWithTitle:@"Share IPA with Airdrop" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+                NSString *filePath = [dd IPAPath];
+                NSDictionary* airdropDictionary;
+                NSBundle *bundle = [NSBundle bundleWithPath:@"/System/Library/PrivateFrameworks/Sharing.framework"];
+                [bundle load];
 
-                    NSString *urlString = [NSString stringWithFormat:@"filza://view%@", [dd IPAPath]];
-                    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:urlString] options:@{} completionHandler:nil];
+                NSString *suf = @"/System/Library/PrivateFrameworks/SharingUI.framework";
+                if ([[NSFileManager defaultManager] fileExistsAtPath:suf]){
+                    NSBundle *sharingUI = [NSBundle bundleWithPath:suf];
+                    [sharingUI load];
+                }
+
+                UIViewController *rvc = [[[UIApplication sharedApplication] keyWindow] rootViewController];
+                NSURL *url = [NSURL fileURLWithPath:filePath];
+
+                id sharingView = [[objc_getClass("SFAirDropSharingViewControllerTV") alloc] initWithSharingItems:@[url]];
+                [sharingView setCompletionHandler:^(NSError *error) {
+                    NSString *sender = airdropDictionary[@"sender"];
+                    if (sender) {
+                        id defaultWorkspace = [objc_getClass("LSApplicationWorkspace") defaultWorkspace];
+                        [defaultWorkspace performSelector:@selector(openApplicationWithBundleID:) withObject:(id)sender];
+                    }
                 }];
-                [doneController addAction:openAction];
-            }
+
+                [rvc presentViewController:sharingView animated:true completion:nil];
+            }];
+            [doneController addAction:openAction];
 
             [root presentViewController:doneController animated:YES completion:nil];
         }); // dispatch on main
                     
         NSLog(@"[trolldecrypt] Over and out.");
-        while(1)
-            sleep(9999999);
+        // while(1)
+        //     sleep(9999999);
     }); // dispatch in background
     
     NSLog(@"[trolldecrypt] All done, exiting constructor.");

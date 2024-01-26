@@ -46,5 +46,9 @@
 		<string>IOUserServer</string>
 		<string>RootDomainUserClient</string>
 	</array>
+	<key>com.apple.private.airdrop.discovery</key>
+	<true/>
+	<key>com.apple.private.airdrop.settings</key>
+	<true/>
 </dict>
 </plist>

@@ -1,4 +1,4 @@
-TARGET := iphone:clang:latest:14.0
+TARGET := appletv:clang:16.4:14.0
 INSTALL_TARGET_PROCESSES = TrollDecrypt
 
 GO_EASY_ON_ME = 1
