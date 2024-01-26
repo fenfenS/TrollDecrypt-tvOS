@@ -43,3 +43,8 @@ NSString *docPath(void);
 void fetchLatestTrollDecryptVersion(void (^completionHandler)(NSString *version));
 void github_fetchLatedVersion(NSString *repo, void (^completionHandler)(NSString *latestVersion));
 NSString *trollDecryptVersion(void);
+
+@interface SFAirDropSharingViewControllerTV : UIViewController
+-(id)initWithSharingItems:(id)arg1;
+-(void)setCompletionHandler:(void (^)(NSError *error))arg1;
+@end

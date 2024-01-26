@@ -3,13 +3,6 @@
 #import "LSApplicationProxy+AltList.h"
 #import <objc/runtime.h>
 
-@interface SFAirDropSharingViewControllerTV : UIViewController
--(id)initWithSharingItems:(id)arg1;
--(void)setCompletionHandler:(void (^)(NSError *error))arg1;
-@end
-
-
-
 UIWindow *alertWindow = NULL;
 UIWindow *kw = NULL;
 UIViewController *root = NULL;
@@ -402,7 +395,7 @@ void github_fetchLatedVersion(NSString *repo, void (^completionHandler)(NSString
 }
 
 void fetchLatestTrollDecryptVersion(void (^completionHandler)(NSString *version)) {
-    github_fetchLatedVersion(@"donato-fiore/TrollDecrypt", completionHandler);
+    github_fetchLatedVersion(@"straight-tamago/TrollDecrypt-tvOS", completionHandler);
 }
 
 NSString *trollDecryptVersion(void) {

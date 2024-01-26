@@ -553,7 +553,7 @@ int find_off_cryptid(const char *filePath) {
 } 
 
 -(NSString *)IPAPath {
-	return [NSString stringWithFormat:@"%@/%@_%@_decrypted.ipa", [self docPath], self.appName, self.appVersion];
+	return [NSString stringWithFormat:@"%@/%@_%@_decrypted.tipa", [self docPath], self.appName, self.appVersion];
 }
 
 -(void) createIPAFile:(pid_t)pid {

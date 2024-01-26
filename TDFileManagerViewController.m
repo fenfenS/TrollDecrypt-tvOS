@@ -1,5 +1,7 @@
 #import "TDFileManagerViewController.h"
 #import "TDUtils.h"
+#import "LSApplicationProxy+AltList.h"
+#import <objc/runtime.h>
 
 @implementation TDFileManagerViewController
 
@@ -83,15 +85,49 @@
     return swipeActions;
 }
 
+UIWindow *kw2 = NULL;
+UIAlertController *doneController2 = NULL;
+
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     NSString *file = self.fileList[indexPath.row];
     NSString *path = [docPath() stringByAppendingPathComponent:file];
-    NSURL *url = [NSURL fileURLWithPath:path];
 
-    UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:@[url] applicationActivities:nil];
-    [self presentViewController:activityViewController animated:YES completion:nil];
+    doneController2 = [UIAlertController alertControllerWithTitle:file message:[NSString stringWithFormat:@"Location:\n%@", path] preferredStyle:UIAlertControllerStyleAlert];
 
-    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+    UIAlertAction *okAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Ok", @"Ok") style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+        [kw2 removeFromSuperview];
+        kw2.hidden = YES;
+    }];
+    [doneController2 addAction:okAction];
+
+    UIAlertAction *openAction = [UIAlertAction actionWithTitle:@"Share IPA with Airdrop" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+        NSString *filePath = path;
+        NSDictionary* airdropDictionary;
+        NSBundle *bundle = [NSBundle bundleWithPath:@"/System/Library/PrivateFrameworks/Sharing.framework"];
+        [bundle load];
+
+        NSString *suf = @"/System/Library/PrivateFrameworks/SharingUI.framework";
+        if ([[NSFileManager defaultManager] fileExistsAtPath:suf]){
+            NSBundle *sharingUI = [NSBundle bundleWithPath:suf];
+            [sharingUI load];
+        }
+
+        NSURL *url = [NSURL fileURLWithPath:filePath];
+
+        id sharingView = [[objc_getClass("SFAirDropSharingViewControllerTV") alloc] initWithSharingItems:@[url]];
+        [sharingView setCompletionHandler:^(NSError *error) {
+            NSString *sender = airdropDictionary[@"sender"];
+            if (sender) {
+                id defaultWorkspace = [objc_getClass("LSApplicationWorkspace") defaultWorkspace];
+                [defaultWorkspace performSelector:@selector(openApplicationWithBundleID:) withObject:(id)sender];
+            }
+        }];
+
+        [self presentViewController:sharingView animated:true completion:nil];
+    }];
+    [doneController2 addAction:openAction];
+
+    [self presentViewController:doneController2 animated:YES completion:nil];
 }
 
 @end
