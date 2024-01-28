@@ -102,27 +102,16 @@ UIAlertController *doneController2 = NULL;
 
     UIAlertAction *openAction = [UIAlertAction actionWithTitle:@"Share IPA with Airdrop" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
         NSString *filePath = path;
+        NSURL *url = [NSURL fileURLWithPath:filePath];
+
         NSBundle *bundle = [NSBundle bundleWithPath:@"/System/Library/PrivateFrameworks/Sharing.framework"];
         [bundle load];
 
-        NSString *suf = @"/System/Library/PrivateFrameworks/SharingUI.framework";
-        if ([[NSFileManager defaultManager] fileExistsAtPath:suf]){
-            NSBundle *sharingUI = [NSBundle bundleWithPath:suf];
-            [sharingUI load];
-        }
-
-        NSURL *url = [NSURL fileURLWithPath:filePath];
+        NSBundle *sharingUI = [NSBundle bundleWithPath:@"/System/Library/PrivateFrameworks/SharingUI.framework"];
+        [sharingUI load];
 
         id sharingView = [[objc_getClass("SFAirDropSharingViewControllerTV") alloc] initWithSharingItems:@[url]];
-        // [sharingView setCompletionHandler:^(NSError *error) {
-        //     NSString *sender = airdropDictionary[@"sender"];
-        //     if (sender) {
-        //         id defaultWorkspace = [objc_getClass("LSApplicationWorkspace") defaultWorkspace];
-        //         [defaultWorkspace performSelector:@selector(openApplicationWithBundleID:) withObject:(id)sender];
-        //     }
-        // }];
         [sharingView setCompletionHandler:^(NSError *error) {
-            NSLog(@"complete with error: %@", error);
             [self dismissViewControllerAnimated:true completion:nil];
         }];
 

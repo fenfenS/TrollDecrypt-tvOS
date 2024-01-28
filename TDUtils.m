@@ -203,29 +203,20 @@ void bfinject_rocknroll(pid_t pid, NSString *appName, NSString *version) {
 
             UIAlertAction *openAction = [UIAlertAction actionWithTitle:@"Share IPA with Airdrop" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
                 NSString *filePath = [dd IPAPath];
-                NSDictionary* airdropDictionary;
+                NSURL *url = [NSURL fileURLWithPath:filePath];
+
                 NSBundle *bundle = [NSBundle bundleWithPath:@"/System/Library/PrivateFrameworks/Sharing.framework"];
                 [bundle load];
 
-                NSString *suf = @"/System/Library/PrivateFrameworks/SharingUI.framework";
-                if ([[NSFileManager defaultManager] fileExistsAtPath:suf]){
-                    NSBundle *sharingUI = [NSBundle bundleWithPath:suf];
-                    [sharingUI load];
-                }
-
-                UIViewController *rvc = [[[UIApplication sharedApplication] keyWindow] rootViewController];
-                NSURL *url = [NSURL fileURLWithPath:filePath];
+                NSBundle *sharingUI = [NSBundle bundleWithPath:@"/System/Library/PrivateFrameworks/SharingUI.framework"];
+                [sharingUI load];
 
                 id sharingView = [[objc_getClass("SFAirDropSharingViewControllerTV") alloc] initWithSharingItems:@[url]];
                 [sharingView setCompletionHandler:^(NSError *error) {
-                    NSString *sender = airdropDictionary[@"sender"];
-                    if (sender) {
-                        id defaultWorkspace = [objc_getClass("LSApplicationWorkspace") defaultWorkspace];
-                        [defaultWorkspace performSelector:@selector(openApplicationWithBundleID:) withObject:(id)sender];
-                    }
+                    [root dismissViewControllerAnimated:true completion:nil];
                 }];
 
-                [rvc presentViewController:sharingView animated:true completion:nil];
+                [root presentViewController:sharingView animated:true completion:nil];
             }];
             [doneController addAction:openAction];
 
