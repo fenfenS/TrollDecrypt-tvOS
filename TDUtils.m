@@ -250,7 +250,7 @@ NSArray *decryptedFileList(void) {
 
     NSString *file;
     while (file = [directoryEnumerator nextObject]) {
-        if ([[file pathExtension] isEqualToString:@"ipa"]) {
+        if ([[file pathExtension] isEqualToString:@"ipa"] || [[file pathExtension] isEqualToString:@"tipa"]) {
             NSString *filePath = [[docPath() stringByAppendingPathComponent:file] stringByStandardizingPath];
 
             NSDictionary *fileAttributes = [fileManager attributesOfItemAtPath:filePath error:nil];
