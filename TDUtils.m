@@ -342,8 +342,8 @@ void decryptAppWithPID(pid_t pid) {
 
     NSDictionary *appInfo = @{
         @"bundleID":bundleID,
-        @"name":[app atl_nameToDisplay],
-        @"version":[app atl_shortVersionString],
+        @"name":[app atl_nameToDisplay] ? [app atl_nameToDisplay] : "unknown",
+        @"version":[app atl_shortVersionString] ? [app atl_shortVersionString] : "1.0",
         @"executable":executable
     };
 
